@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>映像キュー</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#15171a; --panel:#1f2226; --line:#33373d; --text:#e8e8e8; --dim:#9aa0a6;
+  --green:#1f9d55; --green-bg:#16391f; --yellow:#e0b400; --red:#d9534f;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif}
+body{display:flex;flex-direction:column}
+header{display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:18px;margin:0 12px 0 0}
+.btn{background:#2c3036;color:var(--text);border:1px solid #454a52;border-radius:8px;
+  padding:8px 14px;font-size:15px;cursor:pointer;font-family:inherit}
+.btn:hover{background:#373c43}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn.big{font-size:19px;padding:12px 10px;flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.2}
+.btn.big small{font-size:12px;opacity:.75;font-weight:normal}
+.btn.pause.on{background:var(--yellow);border-color:var(--yellow);color:#000}
+.btn.big.warn.on{background:var(--red);border-color:var(--red)}
+.btn.go{background:var(--green);border-color:var(--green);color:#fff;font-weight:bold}
+.btn.warn.on{background:var(--red);border-color:var(--red)}
+.status{font-size:14px;color:var(--dim)}
+.status b{color:var(--text)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px;vertical-align:middle}
+.dot.on{background:var(--green)}
+main{flex:1;display:grid;grid-template-columns:minmax(420px,1.3fr) 1fr;gap:14px;padding:12px 14px;min-height:0;overflow:hidden}
+.left{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.monitor.now .screen{aspect-ratio:auto;height:max(110px, calc(100vh - 560px))}
+.monitor{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.monitor .label{font-size:13px;color:var(--dim);margin-bottom:6px;display:flex;justify-content:space-between}
+.monitor.now{border-color:var(--green)}
+.monitor.now .label b{color:#5fe08f}
+.screen{position:relative;background:#000;aspect-ratio:16/9;border-radius:6px;overflow:hidden}
+.screen video{width:100%;height:100%;object-fit:contain;display:block}
+.screen .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#555;font-size:14px}
+.name{font-size:20px;font-weight:bold;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name.small{font-size:16px}
+.bar{height:8px;background:#000;border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green)}
+.time{display:flex;justify-content:space-between;font-size:14px;color:var(--dim);margin-top:4px;font-variant-numeric:tabular-nums}
+.time .ended{color:var(--yellow)}
+.row{display:flex;gap:12px}
+.next-wrap{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+.monitor.next{border-color:#5a4d10}
+.controls{display:flex;gap:10px}
+.keys{font-size:13px;color:var(--dim);line-height:1.7}
+.keys kbd{background:#2c3036;border:1px solid #454a52;border-radius:4px;padding:1px 6px;color:var(--text);font-family:inherit}
+.right{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0}
+.right .head{padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px;color:var(--dim)}
+ol{list-style:none;margin:0;padding:6px;overflow:auto;flex:1}
+li{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:6px;cursor:pointer;
+  border-left:5px solid transparent;font-size:16px;user-select:none}
+li:hover{background:#2a2e33}
+li .no{color:var(--dim);width:3.2em;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+li .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+li .tag{font-size:12px;padding:2px 8px;border-radius:10px;flex:none}
+li.done .nm{color:#8a8f96}
+li.playing{background:var(--green-bg);border-left-color:var(--green)}
+li.playing .nm{color:#7ff0a8;font-weight:bold}
+li.playing .tag{background:var(--green);color:#fff}
+li.next{border-left-color:var(--yellow)}
+li.next .tag{background:var(--yellow);color:#000}
+.drop{padding:30px;color:var(--dim);text-align:center;line-height:1.8}
+input[type=file]{display:none}
+.helpBtn{margin-left:auto;width:40px;height:40px;border-radius:50%;padding:0;font-size:20px;font-weight:bold}
+#help{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#help.show{display:flex}
+#help .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px 26px;line-height:1.7}
+#help h2{margin:0 0 12px;font-size:20px}
+#help h3{margin:20px 0 8px;font-size:17px;color:#7ff0a8}
+#help table{border-collapse:collapse;width:100%;font-size:15px}
+#help th,#help td{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+#help th{color:var(--dim);font-weight:normal}
+#help td:first-child{white-space:nowrap;font-weight:bold}
+#help td:nth-child(2){white-space:nowrap}
+#help p{margin:6px 0}
+#help ul{margin:6px 0;padding-left:1.4em}
+#help li{display:list-item;border:0;padding:4px 0;cursor:default;font-size:15px;user-select:text}
+#help li:hover{background:none}
+#help .close{float:right}
+.c-yellow{color:var(--yellow)} .c-red{color:#ff7b77}
+</style>
+</head>
+<body>
+<header>
+  <h1>映像キュー</h1>
+  <label class="btn primary">📁 動画フォルダを選ぶ<input type="file" id="folder" webkitdirectory multiple></label>
+  <button class="btn" id="projBtn">🖥 映写画面を開く（Display2）</button>
+  <span class="status"><span class="dot" id="projDot"></span>映写画面：<b id="projState">未接続</b></span>
+  <span class="status" id="folderName"></span>
+  <button class="btn helpBtn" id="helpBtn" title="使い方（H キー）">？</button>
+</header>
+
+<div id="help"><div class="box">
+  <button class="btn close" id="helpClose">閉じる ✕</button>
+  <h2>使い方</h2>
+  <table>
+    <tr><th>ボタン</th><th>キー</th><th>動き</th></tr>
+    <tr><td>◀ 戻る</td><td>←</td><td>前の動画を頭から再生</td></tr>
+    <tr><td>⏸ 止める</td><td>P（Enter でも可）</td><td>その場で一時停止し、もう一度押すと続きから再生</td></tr>
+    <tr><td>■ 黒画面</td><td>B</td><td>スクリーンを真っ黒にし、もう一度押すと元に戻る</td></tr>
+    <tr><td>↺ 頭から</td><td>R</td><td>今の動画を最初から再生</td></tr>
+    <tr><td>次へ ▶</td><td>スペース / →</td><td>次の動画を再生</td></tr>
+  </table>
+  <p>一時停止中はボタンが<span class="c-yellow">黄色</span>に、黒画面中は<span class="c-red">赤</span>になるので、今の状態がひと目で分かります。</p>
+
+  <h3>映写画面をテレビ（Display2）に出す</h3>
+  <ul>
+    <li>Windows の「ディスプレイ設定」が <b>「表示画面を拡張する」</b> になっていることを確認（Windows キー ＋ P →「拡張」）。</li>
+    <li>「🖥 映写画面を開く」を押すと黒い窓が開きます。手元の画面に出たら、黒い窓を1回クリックして <b>Windows キー ＋ Shift ＋ →</b>（または窓をドラッグ）でテレビ側へ移します。</li>
+    <li>テレビ側で黒い窓を <b>ダブルクリック</b>（または F11）すると全画面になります。</li>
+  </ul>
+  <h3>通知を止める方法</h3>
+  <p>通知は、ソフトの側からは止められないので、Windows と Brave の設定で止めます。</p>
+  <ul>
+    <li><b>Windows</b>：「設定 → システム → 通知」で「応答不可」をオンにします。本番中だけオンにするのがおすすめです。</li>
+    <li><b>Brave</b>：「設定 → プライバシーとセキュリティ → サイトの設定 → 通知」で「サイトに通知の送信を許可しない」を選びます。</li>
+  </ul>
+  <p style="color:var(--dim);font-size:13px;margin-top:16px">H キー または ？ボタンで開閉、Esc キーで閉じます。</p>
+</div></div>
+
+<main>
+  <section class="left">
+    <div class="monitor now">
+      <div class="label"><b>● いま流れている動画</b><span id="curNo"></span></div>
+      <div class="screen"><video id="pvCur" muted playsinline></video><div class="empty" id="curEmpty">まだ再生していません</div></div>
+      <div class="name" id="curName">—</div>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="time"><span id="tElapsed">0:00</span><span id="tState"></span><span id="tRemain">残り 0:00</span></div>
+    </div>
+
+    <div class="monitor next">
+      <div class="label"><span style="color:var(--yellow)">▶ 次に流れる動画</span><span id="nextNo"></span></div>
+      <div class="next-wrap">
+        <div class="screen"><video id="pvNext" muted playsinline preload="auto"></video><div class="empty" id="nextEmpty">—</div></div>
+        <div class="name small" id="nextName">—</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn big" id="prevBtn">◀ 戻る<small>← キー</small></button>
+      <button class="btn big pause" id="pauseBtn"><span id="pauseLbl">⏸ 止める</span><small>P キー</small></button>
+      <button class="btn big warn" id="blackBtn"><span id="blackLbl">■ 黒画面</span><small>B キー</small></button>
+      <button class="btn big" id="replayBtn">↺ 頭から<small>R キー</small></button>
+      <button class="btn big go" id="goBtn" style="flex:1.6">次へ ▶<small>スペース / → キー</small></button>
+    </div>
+    <div class="keys">
+      一覧：クリックで「次」に指定、ダブルクリックですぐ再生。動画は最後のコマで止まります。<br>
+      「止める」はその場で一時停止し、もう一度押すと続きから再生します。
+    </div>
+  </section>
+
+  <section class="right">
+    <div class="head">フォルダ内の動画（ファイル名順）</div>
+    <ol id="list"><div class="drop">「動画フォルダを選ぶ」を押して、<br>動画が入ったフォルダを選んでください。</div></ol>
+  </section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const VIDEO_RE = /\.(mp4|m4v|mov|webm)$/i;
+
+let files = [], urls = [];
+let cur = -1, nextIdx = 0;
+let proj = null, pv = null, active = 0, black = false;
+
+/* ---------- フォルダ読み込み ---------- */
+$('#folder').addEventListener('change', e => {
+  urls.forEach(u => u && URL.revokeObjectURL(u));
+  files = [...e.target.files]
+    .filter(f => VIDEO_RE.test(f.name))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ja', { numeric: true }));
+  urls = new Array(files.length).fill(null);
+  cur = -1; nextIdx = 0;
+  if (pv) pv.v.forEach(v => { v.pause(); v.removeAttribute('src'); v.dataset.idx = ''; v.style.visibility = 'hidden'; v.load(); });
+  const pvc = $('#pvCur'); pvc.pause(); pvc.removeAttribute('src'); pvc.load();
+  $('#folderName').textContent = files.length
+    ? `${(files[0].webkitRelativePath || '').split('/')[0]}（${files.length}本）`
+    : '動画ファイルが見つかりません';
+  renderList(); prepareNext(); updateNow(); updateTime();
+  e.target.value = '';
+});
+
+function url(i) { if (!urls[i]) urls[i] = URL.createObjectURL(files[i]); return urls[i]; }
+function title(i) { return files[i] ? files[i].name.replace(/\.[^.]+$/, '') : '—'; }
+
+/* ---------- 一覧 ---------- */
+function renderList() {
+  const ol = $('#list');
+  if (!files.length) { ol.innerHTML = '<div class="drop">動画ファイル（mp4 など）が入ったフォルダを選んでください。</div>'; return; }
+  ol.innerHTML = '';
+  files.forEach((f, i) => {
+    const li = document.createElement('li');
+    li.dataset.i = i;
+    li.innerHTML = `<span class="no">${i + 1}</span><span class="nm"></span><span class="tag"></span>`;
+    li.querySelector('.nm').textContent = title(i);
+    li.addEventListener('click', () => { nextIdx = i; refreshList(); prepareNext(); });
+    li.addEventListener('dblclick', () => play(i));
+    ol.appendChild(li);
+  });
+  refreshList();
+}
+function refreshList() {
+  document.querySelectorAll('#list li').forEach(li => {
+    const i = +li.dataset.i;
+    li.classList.toggle('playing', i === cur);
+    li.classList.toggle('next', i === nextIdx && i !== cur);
+    li.classList.toggle('done', i < cur);
+    li.querySelector('.tag').textContent = i === cur ? '再生中' : (i === nextIdx ? '次' : '');
+  });
+  const el = document.querySelector('#list li.playing') || document.querySelector('#list li.next');
+  if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
+/* ---------- 映写画面（Display2） ---------- */
+const PROJ_CSS = 'html,body{margin:0;height:100%;background:#000;overflow:hidden}' +
+  'video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:#000;visibility:hidden}' +
+  '#black{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;display:none;z-index:5}' +
+  '#hint{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;' +
+  'color:#888;font:20px "Yu Gothic UI",Meiryo,sans-serif;z-index:10;cursor:pointer;gap:10px;text-align:center}' +
+  '#hint b{color:#ddd;font-size:26px;margin-bottom:8px}#hint div{color:#aaa;font-size:18px;text-align:left}';
+
+function makeProjectorPage(d) {
+  d.title = '映写画面';
+  const st = d.createElement('style'); st.textContent = PROJ_CSS; d.head.appendChild(st);
+  d.body.textContent = '';
+  const mk = (tag, id) => { const el = d.createElement(tag); el.id = id; d.body.appendChild(el); return el; };
+  ['a', 'b'].forEach(id => { const v = mk('video', id); v.muted = true; v.playsInline = true; v.preload = 'auto'; });
+  mk('div', 'black');
+  const hint = mk('div', 'hint');
+  const lines = [
+    ['b', 'この黒い画面を テレビ／プロジェクター（Display2）に移してください'],
+    ['p', '① この画面を1回クリックしてから、Windows キー ＋ Shift ＋ → を押す（テレビ側に移動します）'],
+    ['p', '　 または、この窓の上の端をマウスでつかんでテレビ側へドラッグ'],
+    ['p', '② テレビ側に移ったら、ダブルクリック（または F11）で全画面になります'],
+  ];
+  lines.forEach(([t, txt]) => { const el = d.createElement(t === 'b' ? 'b' : 'div'); el.textContent = txt; hint.appendChild(el); });
+}
+
+function openProjector() {
+  if (proj && !proj.closed && pv) { proj.focus(); syncHint(); return; }
+  // ① まずボタンを押した直後に窓を開く（待ってから開くとブラウザにブロックされるため）
+  const left0 = window.screenX + window.outerWidth, w0 = 960, h0 = 540;
+  proj = window.open('', 'cueProjector', `popup=yes,left=${left0},top=40,width=${w0},height=${h0}`);
+  if (!proj) {
+    alert('映写画面が開けませんでした。\nアドレスバー右側の「ポップアップがブロックされました」の表示から「常に許可」を選び、もう一度ボタンを押してください。');
+    return;
+  }
+  buildProjector();
+  syncHint();
+  // ② そのあと、できれば Display2 へ自動で移動（できなくても手動で移せます）
+  moveToSecondScreen();
+}
+
+async function moveToSecondScreen() {
+  if (!('getScreenDetails' in window)) return;
+  try {
+    const sd = await Promise.race([
+      window.getScreenDetails(),
+      new Promise((_, rej) => setTimeout(() => rej('timeout'), 8000))
+    ]);
+    const target = sd.screens.find(x => x !== sd.currentScreen) || sd.screens.find(x => !x.isPrimary);
+    if (target && projReady()) {
+      proj.moveTo(target.availLeft, target.availTop);
+      proj.resizeTo(target.availWidth, target.availHeight);
+      setTimeout(syncHint, 300);
+    }
+  } catch (e) { /* 自動で移せない場合は、映写画面に出る案内に従って手動で移動 */ }
+}
+
+function buildProjector() {
+  const d = proj.document;
+  makeProjectorPage(d);
+  pv = { v: [d.getElementById('a'), d.getElementById('b')], black: d.getElementById('black'), hint: d.getElementById('hint') };
+  pv.v.forEach(v => { v.dataset.idx = ''; v.addEventListener('timeupdate', updateTime); v.addEventListener('ended', updateTime); });
+  active = 0;
+  d.addEventListener('dblclick', () => d.documentElement.requestFullscreen().catch(() => {}));
+  d.addEventListener('fullscreenchange', syncHint);
+  proj.addEventListener('resize', syncHint);
+  d.addEventListener('keydown', onKey);
+  proj.addEventListener('pagehide', () => { pv = null; setProjState(); });
+  setBlack(black);
+  // 既に再生中なら、今の動画を最後のコマで表示し直す
+  if (cur >= 0) {
+    const v = pv.v[0]; v.src = url(cur); v.dataset.idx = cur;
+    v.addEventListener('loadedmetadata', () => { v.currentTime = Math.max(0, v.duration - 0.05); v.style.visibility = 'visible'; }, { once: true });
+  }
+  prepareNext(); setProjState();
+}
+function syncHint() {
+  if (!pv) return;
+  const full = proj.document.fullscreenElement || (proj.innerHeight >= proj.screen.height - 2 && proj.innerWidth >= proj.screen.width - 2);
+  pv.hint.style.display = full ? 'none' : 'flex';
+}
+function projReady() { return proj && !proj.closed && pv; }
+function setProjState() {
+  const ok = projReady();
+  $('#projDot').classList.toggle('on', !!ok);
+  $('#projState').textContent = ok ? '接続中' : '未接続';
+}
+setInterval(setProjState, 1000);
+
+/* ---------- 再生 ---------- */
+function play(i) {
+  if (i < 0 || i >= files.length) return;
+  cur = i;
+  nextIdx = Math.min(i + 1, files.length);
+  if (projReady()) {
+    const nv = pv.v[1 - active], ov = pv.v[active];
+    if (nv.dataset.idx !== String(i)) { nv.src = url(i); nv.dataset.idx = i; }
+    const swap = () => {
+      nv.currentTime = 0;
+      nv.style.visibility = 'visible';
+      nv.play().catch(() => {});
+      ov.pause(); ov.style.visibility = 'hidden';
+      active = 1 - active;
+      prepareNext();
+    };
+    if (nv.readyState >= 2) swap(); else nv.addEventListener('loadeddata', swap, { once: true });
+  }
+  // 手元モニター
+  const pvc = $('#pvCur');
+  pvc.src = url(i); pvc.currentTime = 0; pvc.play().catch(() => {});
+  $('#curEmpty').style.display = 'none';
+  if (black) setBlack(false);
+  setPaused(false);
+  updateNow(); refreshList();
+  if (!projReady()) prepareNext();
+}
+
+function prepareNext() {
+  const has = nextIdx < files.length;
+  const pn = $('#pvNext');
+  $('#nextName').textContent = has ? title(nextIdx) : (files.length ? '（最後の動画です）' : '—');
+  $('#nextNo').textContent = has ? `${nextIdx + 1} / ${files.length}` : '';
+  $('#nextEmpty').style.display = has ? 'none' : 'flex';
+  if (has) {
+    pn.src = url(nextIdx);
+    pn.addEventListener('loadedmetadata', () => { pn.currentTime = Math.min(0.1, pn.duration || 0); }, { once: true });
+  } else { pn.removeAttribute('src'); pn.load(); }
+  // 映写側：裏のプレイヤーに次の動画を先読み
+  if (projReady() && has) {
+    const v = pv.v[1 - active];
+    if (v.dataset.idx !== String(nextIdx)) { v.src = url(nextIdx); v.dataset.idx = nextIdx; v.load(); }
+  }
+}
+
+function replay() {
+  if (cur < 0) return;
+  if (projReady()) { const v = pv.v[active]; v.currentTime = 0; v.play().catch(() => {}); }
+  const pvc = $('#pvCur'); pvc.currentTime = 0; pvc.play().catch(() => {});
+  if (black) setBlack(false);
+  setPaused(false);
+}
+let paused = false;
+function setPaused(on) {
+  paused = on;
+  $('#pauseBtn').classList.toggle('on', on);
+  $('#pauseLbl').textContent = on ? '▶ 再開' : '⏸ 止める';
+  updateTime();
+}
+function togglePause() {
+  if (cur < 0) return;
+  const pvc = $('#pvCur');
+  const v = projReady() ? pv.v[active] : null;
+  const main = v || pvc;
+  if (main.ended) return;               // 最後のコマで止まっているときは何もしない
+  if (!paused) {
+    if (v) v.pause();
+    pvc.pause();
+    if (v) { try { pvc.currentTime = v.currentTime; } catch (e) {} }
+    setPaused(true);
+  } else {
+    if (v) { try { pvc.currentTime = v.currentTime; } catch (e) {} v.play().catch(() => {}); }
+    pvc.play().catch(() => {});
+    setPaused(false);
+  }
+}
+function goNext() { if (nextIdx < files.length) play(nextIdx); }
+function goPrev() { if (cur > 0) play(cur - 1); else if (cur === 0) replay(); }
+
+function setBlack(on) {
+  black = on;
+  if (pv) pv.black.style.display = on ? 'block' : 'none';
+  $('#blackBtn').classList.toggle('on', on);
+  $('#blackLbl').textContent = on ? '■ 黒画面中' : '■ 黒画面';
+}
+
+/* ---------- 表示更新 ---------- */
+function updateNow() {
+  $('#curName').textContent = cur >= 0 ? title(cur) : '—';
+  $('#curNo').textContent = cur >= 0 ? `${cur + 1} / ${files.length}` : '';
+}
+function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function activeVideo() { return projReady() && pv.v[active].dataset.idx === String(cur) ? pv.v[active] : $('#pvCur'); }
+function updateTime() {
+  const v = activeVideo();
+  const d = v.duration || 0, t = v.currentTime || 0;
+  $('#tElapsed').textContent = fmt(t);
+  $('#tRemain').textContent = '残り ' + fmt(d - t);
+  $('#barFill').style.width = d ? (t / d * 100) + '%' : '0';
+  const st = $('#tState');
+  if (cur < 0) { st.textContent = ''; st.className = ''; }
+  else if (v.ended) { st.textContent = '最後のコマで停止中'; st.className = 'ended'; }
+  else if (paused) { st.textContent = '一時停止中'; st.className = 'ended'; }
+  else { st.textContent = '再生中'; st.className = ''; }
+}
+$('#pvCur').addEventListener('timeupdate', () => { if (!projReady()) updateTime(); });
+$('#pvCur').addEventListener('ended', updateTime);
+
+/* ---------- 操作 ---------- */
+function toggleHelp(on) { $('#help').classList.toggle('show', on === undefined ? !$('#help').classList.contains('show') : on); }
+function onKey(e) {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  const k = e.key;
+  if (k === 'h' || k === 'H' || k === '?') { toggleHelp(); return; }
+  if (k === 'Escape') { toggleHelp(false); return; }
+  if (k === ' ' || k === 'ArrowRight' || k === 'PageDown') { e.preventDefault(); goNext(); }
+  else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); goPrev(); }
+  else if (k === 'p' || k === 'P' || k === 'Enter') { e.preventDefault(); togglePause(); }
+  else if (k === 'r' || k === 'R') { replay(); }
+  else if (k === 'b' || k === 'B' || k === '.') { setBlack(!black); }
+}
+document.addEventListener('keydown', onKey);
+$('#goBtn').onclick = goNext;
+$('#prevBtn').onclick = goPrev;
+$('#replayBtn').onclick = replay;
+$('#pauseBtn').onclick = togglePause;
+$('#blackBtn').onclick = () => setBlack(!black);
+$('#projBtn').onclick = openProjector;
+$('#helpBtn').onclick = () => toggleHelp();
+$('#helpClose').onclick = () => toggleHelp(false);
+$('#help').addEventListener('click', e => { if (e.target.id === 'help') toggleHelp(false); });
+// ボタンにフォーカスが残ってスペースで二重に押されるのを防ぐ
+document.querySelectorAll('button').forEach(b => b.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); }));
+
+</script>
+</body>
+</html>
