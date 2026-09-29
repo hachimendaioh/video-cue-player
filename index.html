@@ -7,16 +7,16 @@
 <style>
 :root{
   --bg:#15171a; --panel:#1f2226; --line:#33373d; --text:#e8e8e8; --dim:#9aa0a6;
-  --green:#1f9d55; --green-bg:#16391f; --yellow:#e0b400; --red:#d9534f;
+  --green:#1f9d55; --green-bg:#16391f; --yellow:#e0b400; --red:#d9534f; --memo:#ffd866;
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
   font-family:"Yu Gothic UI","Meiryo",system-ui,sans-serif}
 body{display:flex;flex-direction:column}
-header{display:flex;gap:12px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-header h1{font-size:18px;margin:0 12px 0 0}
+header{display:flex;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:18px;margin:0 8px 0 0}
 .btn{background:#2c3036;color:var(--text);border:1px solid #454a52;border-radius:8px;
-  padding:8px 14px;font-size:15px;cursor:pointer;font-family:inherit}
+  padding:7px 12px;font-size:14px;cursor:pointer;font-family:inherit}
 .btn:hover{background:#373c43}
 .btn.primary{background:var(--green);border-color:var(--green);color:#fff}
 .btn.big{font-size:19px;padding:12px 10px;flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.2}
@@ -24,42 +24,55 @@ header h1{font-size:18px;margin:0 12px 0 0}
 .btn.pause.on{background:var(--yellow);border-color:var(--yellow);color:#000}
 .btn.big.warn.on{background:var(--red);border-color:var(--red)}
 .btn.go{background:var(--green);border-color:var(--green);color:#fff;font-weight:bold}
-.btn.warn.on{background:var(--red);border-color:var(--red)}
 .status{font-size:14px;color:var(--dim)}
 .status b{color:var(--text)}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#666;margin-right:6px;vertical-align:middle}
 .dot.on{background:var(--green)}
-main{flex:1;display:grid;grid-template-columns:minmax(420px,1.3fr) 1fr;gap:14px;padding:12px 14px;min-height:0;overflow:hidden}
+.set{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--dim)}
+.set select,.set input[type=range]{font-family:inherit;font-size:13px;background:#2c3036;color:var(--text);border:1px solid #454a52;border-radius:6px;padding:3px 4px}
+.set input[type=range]{width:90px;padding:0;accent-color:var(--green)}
+#msg{font-size:13px;color:var(--yellow)}
+main{flex:1;display:grid;grid-template-columns:minmax(420px,1.25fr) 1fr;gap:14px;padding:12px 14px;min-height:0;overflow:hidden}
 .left{display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
-.monitor.now .screen{aspect-ratio:auto;height:max(110px, calc(100vh - 560px))}
 .monitor{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
 .monitor .label{font-size:13px;color:var(--dim);margin-bottom:6px;display:flex;justify-content:space-between}
 .monitor.now{border-color:var(--green)}
 .monitor.now .label b{color:#5fe08f}
+.monitor.now .screen{aspect-ratio:auto;height:max(110px, calc(100vh - 610px))}
 .screen{position:relative;background:#000;aspect-ratio:16/9;border-radius:6px;overflow:hidden}
-.screen video{width:100%;height:100%;object-fit:contain;display:block}
+.screen video,.screen img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:none}
 .screen .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#555;font-size:14px}
 .name{font-size:20px;font-weight:bold;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.name.small{font-size:16px}
+.name.small{font-size:16px;margin-top:0}
+.memo-now{font-size:14px;color:var(--memo);margin-top:2px;min-height:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.memo-next{font-size:22px;font-weight:bold;color:var(--memo);margin-top:6px;line-height:1.35;word-break:break-all}
+.memo-next:empty::before{content:"（きっかけメモなし）";font-size:14px;font-weight:normal;color:#666}
 .bar{height:8px;background:#000;border-radius:4px;margin-top:8px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--green)}
 .time{display:flex;justify-content:space-between;font-size:14px;color:var(--dim);margin-top:4px;font-variant-numeric:tabular-nums}
 .time .ended{color:var(--yellow)}
-.row{display:flex;gap:12px}
 .next-wrap{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
 .monitor.next{border-color:#5a4d10}
 .controls{display:flex;gap:10px}
 .keys{font-size:13px;color:var(--dim);line-height:1.7}
-.keys kbd{background:#2c3036;border:1px solid #454a52;border-radius:4px;padding:1px 6px;color:var(--text);font-family:inherit}
 .right{background:var(--panel);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;min-height:0}
-.right .head{padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px;color:var(--dim)}
+.right .head{padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px;color:var(--dim);display:flex;justify-content:space-between;align-items:center;gap:8px}
 ol{list-style:none;margin:0;padding:6px;overflow:auto;flex:1}
-li{display:flex;gap:10px;align-items:center;padding:9px 10px;border-radius:6px;cursor:pointer;
+li{display:flex;gap:8px;align-items:center;padding:7px 8px;border-radius:6px;cursor:pointer;
   border-left:5px solid transparent;font-size:16px;user-select:none}
 li:hover{background:#2a2e33}
-li .no{color:var(--dim);width:3.2em;text-align:right;font-variant-numeric:tabular-nums;flex:none}
-li .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-li .tag{font-size:12px;padding:2px 8px;border-radius:10px;flex:none}
+li .no{color:var(--dim);width:2.6em;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+li .kind{flex:none;width:1.4em;text-align:center;font-size:14px}
+li .body{flex:1;min-width:0}
+li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+li .mm{font-size:13px;color:var(--memo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+li .mm:empty{display:none}
+li .mm input{width:100%;font:inherit;font-size:14px;background:#111;color:var(--memo);border:1px solid var(--memo);border-radius:4px;padding:3px 6px}
+li .ib{flex:none;background:none;border:1px solid transparent;border-radius:6px;color:var(--dim);font-size:15px;padding:2px 6px;cursor:pointer}
+li .ib:hover{border-color:#555;color:var(--text)}
+li .ib.snd.on{color:#7ff0a8}
+li .ib.hide{visibility:hidden}
+li .tag{font-size:12px;padding:2px 0;border-radius:10px;flex:none;width:4.4em;text-align:center}
 li.done .nm{color:#8a8f96}
 li.playing{background:var(--green-bg);border-left-color:var(--green)}
 li.playing .nm{color:#7ff0a8;font-weight:bold}
@@ -68,10 +81,10 @@ li.next{border-left-color:var(--yellow)}
 li.next .tag{background:var(--yellow);color:#000}
 .drop{padding:30px;color:var(--dim);text-align:center;line-height:1.8}
 input[type=file]{display:none}
-.helpBtn{margin-left:auto;width:40px;height:40px;border-radius:50%;padding:0;font-size:20px;font-weight:bold}
+.helpBtn{margin-left:auto;width:38px;height:38px;border-radius:50%;padding:0;font-size:19px;font-weight:bold}
 #help{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
 #help.show{display:flex}
-#help .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:760px;width:100%;max-height:90vh;overflow:auto;padding:22px 26px;line-height:1.7}
+#help .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:780px;width:100%;max-height:90vh;overflow:auto;padding:22px 26px;line-height:1.7}
 #help h2{margin:0 0 12px;font-size:20px}
 #help h3{margin:20px 0 8px;font-size:17px;color:#7ff0a8}
 #help table{border-collapse:collapse;width:100%;font-size:15px}
@@ -84,16 +97,25 @@ input[type=file]{display:none}
 #help li{display:list-item;border:0;padding:4px 0;cursor:default;font-size:15px;user-select:text}
 #help li:hover{background:none}
 #help .close{float:right}
-.c-yellow{color:var(--yellow)} .c-red{color:#ff7b77}
+.c-yellow{color:var(--yellow)} .c-red{color:#ff7b77} .c-memo{color:var(--memo)}
 </style>
 </head>
 <body>
 <header>
   <h1>映像キュー</h1>
-  <label class="btn primary">📁 動画フォルダを選ぶ<input type="file" id="folder" webkitdirectory multiple></label>
+  <label class="btn primary">📁 フォルダを選ぶ<input type="file" id="folder" webkitdirectory multiple></label>
   <button class="btn" id="projBtn">🖥 映写画面を開く（Display2）</button>
   <span class="status"><span class="dot" id="projDot"></span>映写画面：<b id="projState">未接続</b></span>
-  <span class="status" id="folderName"></span>
+  <label class="set">切り替え
+    <select id="fadeSel">
+      <option value="0">パッと</option>
+      <option value="0.5">フェード 0.5秒</option>
+      <option value="1" selected>フェード 1秒</option>
+      <option value="2">フェード 2秒</option>
+    </select>
+  </label>
+  <label class="set">🔊 音量 <input type="range" id="vol" min="0" max="1" step="0.05" value="0.8"></label>
+  <span id="msg"></span>
   <button class="btn helpBtn" id="helpBtn" title="使い方（H キー）">？</button>
 </header>
 
@@ -102,13 +124,22 @@ input[type=file]{display:none}
   <h2>使い方</h2>
   <table>
     <tr><th>ボタン</th><th>キー</th><th>動き</th></tr>
-    <tr><td>◀ 戻る</td><td>←</td><td>前の動画を頭から再生</td></tr>
+    <tr><td>◀ 戻る</td><td>←</td><td>前の動画・画像を頭から映す</td></tr>
     <tr><td>⏸ 止める</td><td>P（Enter でも可）</td><td>その場で一時停止し、もう一度押すと続きから再生</td></tr>
     <tr><td>■ 黒画面</td><td>B</td><td>スクリーンを真っ黒にし、もう一度押すと元に戻る</td></tr>
     <tr><td>↺ 頭から</td><td>R</td><td>今の動画を最初から再生</td></tr>
-    <tr><td>次へ ▶</td><td>スペース / →</td><td>次の動画を再生</td></tr>
+    <tr><td>次へ ▶</td><td>スペース / →</td><td>次の動画・画像を映す</td></tr>
   </table>
   <p>一時停止中はボタンが<span class="c-yellow">黄色</span>に、黒画面中は<span class="c-red">赤</span>になるので、今の状態がひと目で分かります。</p>
+
+  <h3>画像・フェード・メモ・音</h3>
+  <ul>
+    <li><b>画像</b>：jpg・png などの画像もフォルダに入れておけば、動画と同じ順番で映せます。画像は次の合図まで映したままになります。</li>
+    <li><b>切り替え</b>：画面上部の「切り替え」で、パッと切り替えるか、フェード（0.5〜2秒で溶けるように切り替え）を選べます。黒画面に入るときも同じ速さで暗くなります。</li>
+    <li><b class="c-memo">きっかけメモ</b>：一覧の ✎ を押すと、その動画を出すきっかけ（例：「〇〇のセリフの後」）を書けます。「次に流れる動画」の欄に大きく表示されます。書いたメモは自動で記録されます。</li>
+    <li><b>音</b>：一覧の 🔇／🔊 で、動画ごとに音を出すかを切り替えます（最初はすべて 🔇 音なし）。全体の音量は画面上部のつまみで調整します。手元のモニターからは音は出ません。</li>
+    <li><b>別のパソコンで使うとき</b>：一覧の上の「💾 メモを書き出す」で <code>cue_settings.json</code> を保存し、動画フォルダに入れておくと、フォルダを選んだときにメモと音の設定が読み込まれます。</li>
+  </ul>
 
   <h3>映写画面をテレビ（Display2）に出す</h3>
   <ul>
@@ -128,18 +159,22 @@ input[type=file]{display:none}
 <main>
   <section class="left">
     <div class="monitor now">
-      <div class="label"><b>● いま流れている動画</b><span id="curNo"></span></div>
-      <div class="screen"><video id="pvCur" muted playsinline></video><div class="empty" id="curEmpty">まだ再生していません</div></div>
+      <div class="label"><b>● いま映っているもの</b><span id="curNo"></span></div>
+      <div class="screen"><video id="pvCur" muted playsinline></video><img id="imCur" alt=""><div class="empty" id="curEmpty">まだ再生していません</div></div>
       <div class="name" id="curName">—</div>
+      <div class="memo-now" id="curMemo"></div>
       <div class="bar"><i id="barFill"></i></div>
       <div class="time"><span id="tElapsed">0:00</span><span id="tState"></span><span id="tRemain">残り 0:00</span></div>
     </div>
 
     <div class="monitor next">
-      <div class="label"><span style="color:var(--yellow)">▶ 次に流れる動画</span><span id="nextNo"></span></div>
+      <div class="label"><span style="color:var(--yellow)">▶ 次に映すもの</span><span id="nextNo"></span></div>
       <div class="next-wrap">
-        <div class="screen"><video id="pvNext" muted playsinline preload="auto"></video><div class="empty" id="nextEmpty">—</div></div>
-        <div class="name small" id="nextName">—</div>
+        <div class="screen"><video id="pvNext" muted playsinline preload="auto"></video><img id="imNext" alt=""><div class="empty" id="nextEmpty">—</div></div>
+        <div>
+          <div class="name small" id="nextName">—</div>
+          <div class="memo-next" id="nextMemo"></div>
+        </div>
       </div>
     </div>
 
@@ -151,60 +186,147 @@ input[type=file]{display:none}
       <button class="btn big go" id="goBtn" style="flex:1.6">次へ ▶<small>スペース / → キー</small></button>
     </div>
     <div class="keys">
-      一覧：クリックで「次」に指定、ダブルクリックですぐ再生。動画は最後のコマで止まります。<br>
-      「止める」はその場で一時停止し、もう一度押すと続きから再生します。
+      一覧：クリックで「次」に指定、ダブルクリックですぐ映す。✎ できっかけメモ、🔇／🔊 で音のオン・オフ。<br>
+      動画は最後のコマで止まり、画像は次の合図まで映ったままです。
     </div>
   </section>
 
   <section class="right">
-    <div class="head">フォルダ内の動画（ファイル名順）</div>
-    <ol id="list"><div class="drop">「動画フォルダを選ぶ」を押して、<br>動画が入ったフォルダを選んでください。</div></ol>
+    <div class="head"><span id="folderName">フォルダ内の動画・画像（ファイル名順）</span><button class="btn" id="exportBtn" style="display:none">💾 メモを書き出す</button></div>
+    <ol id="list"><div class="drop">「📁 フォルダを選ぶ」を押して、<br>動画や画像が入ったフォルダを選んでください。</div></ol>
   </section>
 </main>
 
 <script>
 const $ = s => document.querySelector(s);
 const VIDEO_RE = /\.(mp4|m4v|mov|webm)$/i;
+const IMAGE_RE = /\.(jpe?g|png|gif|webp|bmp)$/i;
+const SETTINGS_FILE = 'cue_settings.json';
 
-let files = [], urls = [];
+let items = [];            // {file, name, kind:'video'|'image', url}
 let cur = -1, nextIdx = 0;
-let proj = null, pv = null, active = 0, black = false;
+let folderKey = '';
+let settings = {};         // name -> {memo, sound}
+let proj = null, pv = null, active = 0, black = false, paused = false;
+let playToken = 0, releaseTimer = null, pending = false;
+
+const fadeSec = () => parseFloat($('#fadeSel').value) || 0;
+const volume = () => parseFloat($('#vol').value);
+const isImg = i => items[i] && items[i].kind === 'image';
+const title = i => items[i] ? items[i].name.replace(/\.[^.]+$/, '') : '—';
+const memoOf = i => (items[i] && settings[items[i].name] && settings[items[i].name].memo) || '';
+const soundOf = i => !!(items[i] && settings[items[i].name] && settings[items[i].name].sound);
+function url(i) { const it = items[i]; if (!it.url) it.url = URL.createObjectURL(it.file); return it.url; }
+function say(t) { $('#msg').textContent = t || ''; if (t) setTimeout(() => { if ($('#msg').textContent === t) $('#msg').textContent = ''; }, 6000); }
+
+/* ---------- 設定（メモ・音）の保存と読み込み ---------- */
+function storageKey() { return 'videoCue:' + folderKey; }
+function saveSettings() {
+  try { localStorage.setItem(storageKey(), JSON.stringify({ savedAt: Date.now(), items: settings })); } catch (e) {}
+}
+function setItem(i, patch) {
+  const n = items[i].name;
+  settings[n] = Object.assign({ memo: '', sound: false }, settings[n], patch);
+  saveSettings();
+}
+async function loadSettings(jsonFile) {
+  let local = null, fromFile = null;
+  try { local = JSON.parse(localStorage.getItem(storageKey()) || 'null'); } catch (e) {}
+  if (jsonFile) { try { fromFile = JSON.parse(await jsonFile.text()); } catch (e) { say(SETTINGS_FILE + ' を読めませんでした'); } }
+  const pick = [local, fromFile].filter(x => x && x.items).sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0))[0];
+  settings = pick ? pick.items : {};
+  if (pick && pick === fromFile && fromFile !== local) say(SETTINGS_FILE + ' からメモを読み込みました');
+}
+function exportSettings() {
+  const data = { app: 'video-cue-player', savedAt: Date.now(), folder: folderKey, items: {} };
+  items.forEach(it => { const s = settings[it.name]; if (s && (s.memo || s.sound)) data.items[it.name] = s; });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = SETTINGS_FILE;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  say('保存したファイルを動画フォルダに入れておくと、次回自動で読み込まれます');
+}
 
 /* ---------- フォルダ読み込み ---------- */
-$('#folder').addEventListener('change', e => {
-  urls.forEach(u => u && URL.revokeObjectURL(u));
-  files = [...e.target.files]
-    .filter(f => VIDEO_RE.test(f.name))
-    .sort((a, b) => a.name.localeCompare(b.name, 'ja', { numeric: true }));
-  urls = new Array(files.length).fill(null);
-  cur = -1; nextIdx = 0;
-  if (pv) pv.v.forEach(v => { v.pause(); v.removeAttribute('src'); v.dataset.idx = ''; v.style.visibility = 'hidden'; v.load(); });
-  const pvc = $('#pvCur'); pvc.pause(); pvc.removeAttribute('src'); pvc.load();
-  $('#folderName').textContent = files.length
-    ? `${(files[0].webkitRelativePath || '').split('/')[0]}（${files.length}本）`
-    : '動画ファイルが見つかりません';
-  renderList(); prepareNext(); updateNow(); updateTime();
+$('#folder').addEventListener('change', async e => {
+  const all = [...e.target.files];
   e.target.value = '';
+  if (!all.length) return;
+  items.forEach(it => it.url && URL.revokeObjectURL(it.url));
+  items = all
+    .filter(f => VIDEO_RE.test(f.name) || IMAGE_RE.test(f.name))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ja', { numeric: true }))
+    .map(f => ({ file: f, name: f.name, kind: IMAGE_RE.test(f.name) ? 'image' : 'video', url: null }));
+  folderKey = (all[0].webkitRelativePath || '').split('/')[0] || 'folder';
+  await loadSettings(all.find(f => f.name === SETTINGS_FILE));
+  cur = -1; nextIdx = 0; setPaused(false);
+  resetProjector();
+  showMedia($('#pvCur'), $('#imCur'), null);
+  $('#curEmpty').style.display = 'flex';
+  $('#folderName').textContent = items.length ? `${folderKey}（${items.length}本）` : '動画・画像が見つかりません';
+  $('#exportBtn').style.display = items.length ? '' : 'none';
+  renderList(); prepareNext(); updateNow(); updateTime();
 });
-
-function url(i) { if (!urls[i]) urls[i] = URL.createObjectURL(files[i]); return urls[i]; }
-function title(i) { return files[i] ? files[i].name.replace(/\.[^.]+$/, '') : '—'; }
 
 /* ---------- 一覧 ---------- */
 function renderList() {
   const ol = $('#list');
-  if (!files.length) { ol.innerHTML = '<div class="drop">動画ファイル（mp4 など）が入ったフォルダを選んでください。</div>'; return; }
+  if (!items.length) { ol.innerHTML = '<div class="drop">動画（mp4 など）や画像（jpg・png など）が入ったフォルダを選んでください。</div>'; return; }
   ol.innerHTML = '';
-  files.forEach((f, i) => {
+  items.forEach((it, i) => {
     const li = document.createElement('li');
     li.dataset.i = i;
-    li.innerHTML = `<span class="no">${i + 1}</span><span class="nm"></span><span class="tag"></span>`;
+    li.innerHTML = '<span class="no"></span><span class="kind"></span><div class="body"><div class="nm"></div><div class="mm"></div></div>' +
+      '<button class="ib snd" title="音のオン・オフ"></button><button class="ib edit" title="きっかけメモを書く">✎</button><span class="tag"></span>';
+    li.querySelector('.no').textContent = i + 1;
+    li.querySelector('.kind').textContent = it.kind === 'image' ? '🖼' : '🎬';
     li.querySelector('.nm').textContent = title(i);
     li.addEventListener('click', () => { nextIdx = i; refreshList(); prepareNext(); });
-    li.addEventListener('dblclick', () => play(i));
+    li.addEventListener('dblclick', e => { if (!e.target.closest('input')) play(i); });
+    const snd = li.querySelector('.snd');
+    if (it.kind === 'image') snd.classList.add('hide');
+    snd.addEventListener('click', e => { e.stopPropagation(); setItem(i, { sound: !soundOf(i) }); refreshRow(li); if (i === cur) applySound(); });
+    snd.addEventListener('dblclick', e => e.stopPropagation());
+    const ed = li.querySelector('.edit');
+    ed.addEventListener('click', e => { e.stopPropagation(); editMemo(li, i); });
+    ed.addEventListener('dblclick', e => e.stopPropagation());
+    refreshRow(li);
     ol.appendChild(li);
   });
   refreshList();
+}
+function refreshRow(li) {
+  const i = +li.dataset.i;
+  const mm = li.querySelector('.mm');
+  if (!mm.querySelector('input')) mm.textContent = memoOf(i);
+  const snd = li.querySelector('.snd');
+  snd.textContent = soundOf(i) ? '🔊' : '🔇';
+  snd.classList.toggle('on', soundOf(i));
+}
+function editMemo(li, i) {
+  const mm = li.querySelector('.mm');
+  if (mm.querySelector('input')) return;
+  mm.textContent = '';
+  const inp = document.createElement('input');
+  inp.value = memoOf(i);
+  inp.placeholder = 'きっかけ（例：〇〇のセリフの後）… Enter で決定';
+  mm.appendChild(inp);
+  inp.focus();
+  let done = false;
+  const finish = save => {
+    if (done) return; done = true;
+    if (save) setItem(i, { memo: inp.value.trim() });
+    mm.textContent = '';
+    refreshRow(li); updateNow(); prepareNextText();
+  };
+  inp.addEventListener('keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter') { e.preventDefault(); finish(true); inp.blur(); }
+    else if (e.key === 'Escape') { finish(false); }
+  });
+  inp.addEventListener('blur', () => finish(true));
+  inp.addEventListener('click', e => e.stopPropagation());
 }
 function refreshList() {
   document.querySelectorAll('#list li').forEach(li => {
@@ -212,26 +334,47 @@ function refreshList() {
     li.classList.toggle('playing', i === cur);
     li.classList.toggle('next', i === nextIdx && i !== cur);
     li.classList.toggle('done', i < cur);
-    li.querySelector('.tag').textContent = i === cur ? '再生中' : (i === nextIdx ? '次' : '');
+    li.querySelector('.tag').textContent = i === cur ? '映写中' : (i === nextIdx ? '次' : '');
   });
   const el = document.querySelector('#list li.playing') || document.querySelector('#list li.next');
   if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
+/* ---------- 手元モニター ---------- */
+function showMedia(v, img, i, startAtEnd) {
+  if (i === null || i === undefined || !items[i]) {
+    v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none';
+    img.removeAttribute('src'); img.style.display = 'none';
+    return;
+  }
+  if (isImg(i)) {
+    v.pause(); v.removeAttribute('src'); v.load(); v.style.display = 'none';
+    img.src = url(i); img.style.display = 'block';
+  } else {
+    img.removeAttribute('src'); img.style.display = 'none';
+    v.src = url(i); v.style.display = 'block';
+  }
+}
+
 /* ---------- 映写画面（Display2） ---------- */
 const PROJ_CSS = 'html,body{margin:0;height:100%;background:#000;overflow:hidden}' +
-  'video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:#000;visibility:hidden}' +
-  '#black{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;display:none;z-index:5}' +
+  '.slot{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0}' +
+  '.slot video,.slot img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;display:none}' +
+  '#black{position:absolute;top:0;left:0;width:100%;height:100%;background:#000;opacity:0;z-index:5;pointer-events:none}' +
   '#hint{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;' +
-  'color:#888;font:20px "Yu Gothic UI",Meiryo,sans-serif;z-index:10;cursor:pointer;gap:10px;text-align:center}' +
+  'color:#888;font:20px "Yu Gothic UI",Meiryo,sans-serif;z-index:10;cursor:pointer;gap:10px;text-align:center;background:#000}' +
   '#hint b{color:#ddd;font-size:26px;margin-bottom:8px}#hint div{color:#aaa;font-size:18px;text-align:left}';
 
 function makeProjectorPage(d) {
   d.title = '映写画面';
   const st = d.createElement('style'); st.textContent = PROJ_CSS; d.head.appendChild(st);
   d.body.textContent = '';
-  const mk = (tag, id) => { const el = d.createElement(tag); el.id = id; d.body.appendChild(el); return el; };
-  ['a', 'b'].forEach(id => { const v = mk('video', id); v.muted = true; v.playsInline = true; v.preload = 'auto'; });
+  const mk = (tag, id, parent) => { const el = d.createElement(tag); if (id) el.id = id; (parent || d.body).appendChild(el); return el; };
+  ['s0', 's1'].forEach(id => {
+    const s = mk('div', id); s.className = 'slot';
+    const v = mk('video', null, s); v.muted = true; v.playsInline = true; v.preload = 'auto';
+    mk('img', null, s);
+  });
   mk('div', 'black');
   const hint = mk('div', 'hint');
   const lines = [
@@ -245,16 +388,14 @@ function makeProjectorPage(d) {
 
 function openProjector() {
   if (proj && !proj.closed && pv) { proj.focus(); syncHint(); return; }
-  // ① まずボタンを押した直後に窓を開く（待ってから開くとブラウザにブロックされるため）
-  const left0 = window.screenX + window.outerWidth, w0 = 960, h0 = 540;
-  proj = window.open('', 'cueProjector', `popup=yes,left=${left0},top=40,width=${w0},height=${h0}`);
+  const left0 = window.screenX + window.outerWidth;
+  proj = window.open('', 'cueProjector', `popup=yes,left=${left0},top=40,width=960,height=540`);
   if (!proj) {
     alert('映写画面が開けませんでした。\nアドレスバー右側の「ポップアップがブロックされました」の表示から「常に許可」を選び、もう一度ボタンを押してください。');
     return;
   }
   buildProjector();
   syncHint();
-  // ② そのあと、できれば Display2 へ自動で移動（できなくても手動で移せます）
   moveToSecondScreen();
 }
 
@@ -271,27 +412,34 @@ async function moveToSecondScreen() {
       proj.resizeTo(target.availWidth, target.availHeight);
       setTimeout(syncHint, 300);
     }
-  } catch (e) { /* 自動で移せない場合は、映写画面に出る案内に従って手動で移動 */ }
+  } catch (e) { /* 自動で移せない場合は、映写画面の案内に従って手動で移動 */ }
 }
 
 function buildProjector() {
   const d = proj.document;
   makeProjectorPage(d);
-  pv = { v: [d.getElementById('a'), d.getElementById('b')], black: d.getElementById('black'), hint: d.getElementById('hint') };
-  pv.v.forEach(v => { v.dataset.idx = ''; v.addEventListener('timeupdate', updateTime); v.addEventListener('ended', updateTime); });
+  const slotOf = el => ({ el, v: el.querySelector('video'), img: el.querySelector('img'), idx: -1 });
+  pv = { slots: [slotOf(d.getElementById('s0')), slotOf(d.getElementById('s1'))], black: d.getElementById('black'), hint: d.getElementById('hint') };
+  pv.slots.forEach(s => { s.v.addEventListener('timeupdate', updateTime); s.v.addEventListener('ended', updateTime); });
   active = 0;
   d.addEventListener('dblclick', () => d.documentElement.requestFullscreen().catch(() => {}));
   d.addEventListener('fullscreenchange', syncHint);
   proj.addEventListener('resize', syncHint);
   d.addEventListener('keydown', onKey);
   proj.addEventListener('pagehide', () => { pv = null; setProjState(); });
-  setBlack(black);
-  // 既に再生中なら、今の動画を最後のコマで表示し直す
-  if (cur >= 0) {
-    const v = pv.v[0]; v.src = url(cur); v.dataset.idx = cur;
-    v.addEventListener('loadedmetadata', () => { v.currentTime = Math.max(0, v.duration - 0.05); v.style.visibility = 'visible'; }, { once: true });
+  setBlack(black, true);
+  if (cur >= 0) {   // 開き直したとき：今のものを表示（動画は最後のコマ）
+    const s = pv.slots[0];
+    loadInto(s, cur);
+    s.el.style.opacity = 1;
+    if (!isImg(cur)) s.v.addEventListener('loadedmetadata', () => { s.v.currentTime = Math.max(0, s.v.duration - 0.05); }, { once: true });
   }
   prepareNext(); setProjState();
+}
+function resetProjector() {
+  if (!projReady()) return;
+  clearTimeout(releaseTimer);
+  pv.slots.forEach(s => { s.v.pause(); s.v.removeAttribute('src'); s.v.load(); s.img.removeAttribute('src'); s.v.style.display = s.img.style.display = 'none'; s.el.style.opacity = 0; s.idx = -1; });
 }
 function syncHint() {
   if (!pv) return;
@@ -306,59 +454,109 @@ function setProjState() {
 }
 setInterval(setProjState, 1000);
 
+// スロットに動画・画像を読み込む（音は出さない状態で準備）
+function loadInto(s, i) {
+  s.idx = i;
+  if (isImg(i)) {
+    s.v.pause(); s.v.removeAttribute('src'); s.v.load(); s.v.style.display = 'none';
+    s.img.src = url(i); s.img.style.display = 'block';
+  } else {
+    s.img.removeAttribute('src'); s.img.style.display = 'none';
+    s.v.muted = true; s.v.src = url(i); s.v.style.display = 'block'; s.v.load();
+  }
+}
+function slotReady(s) { return isImg(s.idx) ? (s.img.complete && s.img.naturalWidth > 0) : s.v.readyState >= 2; }
+function whenReady(s, fn) {
+  if (slotReady(s)) { fn(); return; }
+  const target = isImg(s.idx) ? s.img : s.v;
+  target.addEventListener(isImg(s.idx) ? 'load' : 'loadeddata', fn, { once: true });
+}
+// フェード中の古い画面を片付ける
+function releaseOld() {
+  clearTimeout(releaseTimer); releaseTimer = null;
+  if (!projReady()) return;
+  const os = pv.slots[1 - active];
+  os.el.style.transition = 'none';
+  os.el.style.opacity = 0;
+  os.v.pause();
+}
+
 /* ---------- 再生 ---------- */
 function play(i) {
-  if (i < 0 || i >= files.length) return;
+  if (i < 0 || i >= items.length) return;
   cur = i;
-  nextIdx = Math.min(i + 1, files.length);
+  nextIdx = Math.min(i + 1, items.length);
+  const token = ++playToken;
   if (projReady()) {
-    const nv = pv.v[1 - active], ov = pv.v[active];
-    if (nv.dataset.idx !== String(i)) { nv.src = url(i); nv.dataset.idx = i; }
-    const swap = () => {
-      nv.currentTime = 0;
-      nv.style.visibility = 'visible';
-      nv.play().catch(() => {});
-      ov.pause(); ov.style.visibility = 'hidden';
+    releaseOld();
+    const ns = pv.slots[1 - active], os = pv.slots[active];
+    if (ns.idx !== i) loadInto(ns, i);
+    pending = true;
+    whenReady(ns, () => {
+      if (token !== playToken) return;
+      pending = false;
+      const f = fadeSec();
+      if (!isImg(i)) { ns.v.currentTime = 0; startVideo(ns.v, i); }
+      ns.el.style.zIndex = 2; os.el.style.zIndex = 1;
+      ns.el.style.transition = 'none'; ns.el.style.opacity = 0;
+      void ns.el.offsetWidth;
+      ns.el.style.transition = f ? `opacity ${f}s linear` : 'none';
+      ns.el.style.opacity = 1;
       active = 1 - active;
-      prepareNext();
-    };
-    if (nv.readyState >= 2) swap(); else nv.addEventListener('loadeddata', swap, { once: true });
+      releaseTimer = setTimeout(() => { releaseOld(); preloadNextProj(); }, f * 1000 + 60);
+    });
   }
   // 手元モニター
-  const pvc = $('#pvCur');
-  pvc.src = url(i); pvc.currentTime = 0; pvc.play().catch(() => {});
+  showMedia($('#pvCur'), $('#imCur'), i);
+  if (!isImg(i)) { const pvc = $('#pvCur'); pvc.currentTime = 0; pvc.play().catch(() => {}); }
   $('#curEmpty').style.display = 'none';
   if (black) setBlack(false);
   setPaused(false);
-  updateNow(); refreshList();
-  if (!projReady()) prepareNext();
+  updateNow(); refreshList(); prepareNext();
+}
+function startVideo(v, i) {
+  v.volume = volume();
+  v.muted = !soundOf(i);
+  v.play().catch(() => {
+    if (!v.muted) { v.muted = true; v.play().catch(() => {}); say('音が出せませんでした。映写画面を一度クリックしてから、もう一度お試しください'); }
+  });
+}
+function applySound() {
+  if (!projReady() || cur < 0 || isImg(cur)) return;
+  const v = pv.slots[active].v;
+  v.volume = volume();
+  v.muted = !soundOf(cur);
 }
 
+function prepareNextText() {
+  const has = nextIdx < items.length;
+  $('#nextName').textContent = has ? title(nextIdx) : (items.length ? '（最後です）' : '—');
+  $('#nextNo').textContent = has ? `${nextIdx + 1} / ${items.length}` : '';
+  $('#nextMemo').textContent = has ? memoOf(nextIdx) : '';
+}
 function prepareNext() {
-  const has = nextIdx < files.length;
-  const pn = $('#pvNext');
-  $('#nextName').textContent = has ? title(nextIdx) : (files.length ? '（最後の動画です）' : '—');
-  $('#nextNo').textContent = has ? `${nextIdx + 1} / ${files.length}` : '';
+  const has = nextIdx < items.length;
+  prepareNextText();
   $('#nextEmpty').style.display = has ? 'none' : 'flex';
-  if (has) {
-    pn.src = url(nextIdx);
-    pn.addEventListener('loadedmetadata', () => { pn.currentTime = Math.min(0.1, pn.duration || 0); }, { once: true });
-  } else { pn.removeAttribute('src'); pn.load(); }
-  // 映写側：裏のプレイヤーに次の動画を先読み
-  if (projReady() && has) {
-    const v = pv.v[1 - active];
-    if (v.dataset.idx !== String(nextIdx)) { v.src = url(nextIdx); v.dataset.idx = nextIdx; v.load(); }
-  }
+  const pn = $('#pvNext');
+  showMedia(pn, $('#imNext'), has ? nextIdx : null);
+  if (has && !isImg(nextIdx)) pn.addEventListener('loadedmetadata', () => { pn.currentTime = Math.min(0.1, pn.duration || 0); }, { once: true });
+  if (!releaseTimer) preloadNextProj();
+}
+// 映写側：空いているほうのスロットに次を先読み
+function preloadNextProj() {
+  if (!projReady() || pending || nextIdx >= items.length) return;
+  const s = pv.slots[1 - active];
+  if (s.idx !== nextIdx) loadInto(s, nextIdx);
 }
 
 function replay() {
-  if (cur < 0) return;
-  if (projReady()) { const v = pv.v[active]; v.currentTime = 0; v.play().catch(() => {}); }
+  if (cur < 0 || isImg(cur)) return;
+  if (projReady()) { const v = pv.slots[active].v; v.currentTime = 0; startVideo(v, cur); }
   const pvc = $('#pvCur'); pvc.currentTime = 0; pvc.play().catch(() => {});
   if (black) setBlack(false);
   setPaused(false);
 }
-let paused = false;
 function setPaused(on) {
   paused = on;
   $('#pauseBtn').classList.toggle('on', on);
@@ -366,11 +564,11 @@ function setPaused(on) {
   updateTime();
 }
 function togglePause() {
-  if (cur < 0) return;
+  if (cur < 0 || isImg(cur)) return;
   const pvc = $('#pvCur');
-  const v = projReady() ? pv.v[active] : null;
+  const v = projReady() ? pv.slots[active].v : null;
   const main = v || pvc;
-  if (main.ended) return;               // 最後のコマで止まっているときは何もしない
+  if (main.ended) return;
   if (!paused) {
     if (v) v.pause();
     pvc.pause();
@@ -382,12 +580,16 @@ function togglePause() {
     setPaused(false);
   }
 }
-function goNext() { if (nextIdx < files.length) play(nextIdx); }
+function goNext() { if (nextIdx < items.length) play(nextIdx); }
 function goPrev() { if (cur > 0) play(cur - 1); else if (cur === 0) replay(); }
 
-function setBlack(on) {
+function setBlack(on, instant) {
   black = on;
-  if (pv) pv.black.style.display = on ? 'block' : 'none';
+  if (pv) {
+    const f = instant ? 0 : fadeSec();
+    pv.black.style.transition = f ? `opacity ${f}s linear` : 'none';
+    pv.black.style.opacity = on ? 1 : 0;
+  }
   $('#blackBtn').classList.toggle('on', on);
   $('#blackLbl').textContent = on ? '■ 黒画面中' : '■ 黒画面';
 }
@@ -395,21 +597,29 @@ function setBlack(on) {
 /* ---------- 表示更新 ---------- */
 function updateNow() {
   $('#curName').textContent = cur >= 0 ? title(cur) : '—';
-  $('#curNo').textContent = cur >= 0 ? `${cur + 1} / ${files.length}` : '';
+  $('#curNo').textContent = cur >= 0 ? `${cur + 1} / ${items.length}` : '';
+  $('#curMemo').textContent = cur >= 0 ? memoOf(cur) : '';
+  updateTime();
 }
 function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
-function activeVideo() { return projReady() && pv.v[active].dataset.idx === String(cur) ? pv.v[active] : $('#pvCur'); }
+function activeVideo() { return projReady() && pv.slots[active].idx === cur ? pv.slots[active].v : $('#pvCur'); }
 function updateTime() {
+  const st = $('#tState');
+  if (cur >= 0 && isImg(cur)) {
+    $('#tElapsed').textContent = ''; $('#tRemain').textContent = '';
+    $('#barFill').style.width = '100%';
+    st.textContent = '画像を映写中（次の合図まで表示）'; st.className = '';
+    return;
+  }
   const v = activeVideo();
   const d = v.duration || 0, t = v.currentTime || 0;
   $('#tElapsed').textContent = fmt(t);
   $('#tRemain').textContent = '残り ' + fmt(d - t);
   $('#barFill').style.width = d ? (t / d * 100) + '%' : '0';
-  const st = $('#tState');
   if (cur < 0) { st.textContent = ''; st.className = ''; }
   else if (v.ended) { st.textContent = '最後のコマで停止中'; st.className = 'ended'; }
   else if (paused) { st.textContent = '一時停止中'; st.className = 'ended'; }
-  else { st.textContent = '再生中'; st.className = ''; }
+  else { st.textContent = soundOf(cur) ? '再生中 🔊' : '再生中'; st.className = ''; }
 }
 $('#pvCur').addEventListener('timeupdate', () => { if (!projReady()) updateTime(); });
 $('#pvCur').addEventListener('ended', updateTime);
@@ -417,7 +627,8 @@ $('#pvCur').addEventListener('ended', updateTime);
 /* ---------- 操作 ---------- */
 function toggleHelp(on) { $('#help').classList.toggle('show', on === undefined ? !$('#help').classList.contains('show') : on); }
 function onKey(e) {
-  if (e.target && e.target.tagName === 'INPUT') return;
+  const tg = e.target && e.target.tagName;
+  if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
   const k = e.key;
   if (k === 'h' || k === 'H' || k === '?') { toggleHelp(); return; }
   if (k === 'Escape') { toggleHelp(false); return; }
@@ -434,12 +645,15 @@ $('#replayBtn').onclick = replay;
 $('#pauseBtn').onclick = togglePause;
 $('#blackBtn').onclick = () => setBlack(!black);
 $('#projBtn').onclick = openProjector;
+$('#exportBtn').onclick = exportSettings;
 $('#helpBtn').onclick = () => toggleHelp();
 $('#helpClose').onclick = () => toggleHelp(false);
 $('#help').addEventListener('click', e => { if (e.target.id === 'help') toggleHelp(false); });
-// ボタンにフォーカスが残ってスペースで二重に押されるのを防ぐ
-document.querySelectorAll('button').forEach(b => b.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') e.preventDefault(); }));
-
+$('#vol').addEventListener('input', applySound);
+// 設定を触ったあと、スペースキーで選択肢が変わらないようにフォーカスを外す
+['#fadeSel', '#vol'].forEach(s => $(s).addEventListener('change', () => $(s).blur()));
+// ボタンを押したあとフォーカスを外す（スペースキーでボタンがもう一度押されるのを防ぐ）
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b) setTimeout(() => b.blur(), 0); }, true);
 </script>
 </body>
 </html>
